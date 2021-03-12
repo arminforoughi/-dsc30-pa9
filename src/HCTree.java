@@ -162,14 +162,17 @@ public class HCTree {
         public int compareTo(HCNode o) {
             if (this.freq > o.freq) {
                 return 1;
-            } else if (this.freq > o.freq) {
+            } else if (this.freq < o.freq) {
                 return -1;
             } else if (this.freq == o.freq) {
-                if ((Integer) this.symbol > (Integer) o.symbol) {
+                if ((this.symbol & 0xff) > (o.symbol & 0xff)) {
                     return 1;
+                } else if ((this.symbol & 0xff) < (o.symbol & 0xff)) {
+                    return -1;
                 }
             }
 
+            return 0;
         }
     }
 
@@ -194,7 +197,7 @@ public class HCTree {
     /**
      * builds a tree by going through the freq and building an Priority queue
      *
-     * @param freq
+     * @param freq the fre table from acciss table
      */
     public void buildTree(int[] freq) {
         PriorityQueue<HCNode> PQueue = new PriorityQueue<>();
@@ -228,8 +231,8 @@ public class HCTree {
     /**
      * giving a symbol get the HCtree encoding bits
      *
-     * @param symbol
-     * @param out
+     * @param symbol the symbol in byte
+     * @param out the out stream
      * @throws IOException
      */
     public void encode(byte symbol, BitOutputStream out) throws IOException {
@@ -256,34 +259,38 @@ public class HCTree {
     /**
      * giving the HCtree encoding bits, it outputs the symbol
      *
-     * @param in
-     * @return
-     * @throws IOException
+     * @param in the in stream
+     * @return the symbyl byte
+     * @throws IOException throws exception
      */
     public byte decode(BitInputStream in) throws IOException {
         HCNode temp = root;
         while (!temp.isLeaf()) {
-            if (in.readBit() == 0) {
-                temp = temp.getC0();
-            } else if (in.readBit() == 1) {
-                temp = temp.getC1();
+            // goes throug the tree until get to root
+            int tempi = in.readBit(); // reads a bit on every loop
+            if (tempi == 0) {
+                temp = temp.getC0(); // child 0
+            } else if (tempi == 1) {
+                temp = temp.getC1(); // child 1
             }
         }
         return temp.getSymbol();
     }
 
     /**
+     * given a node build the tree from out using pre-order traversing
      *
-     *
-     * @param node
-     * @param out
-     * @throws IOException
+     * @param node the node to start going down the tree
+     * @param out the out stream for every bit
+     * @throws IOException throws exception
      */
     public void encodeHCTree(HCNode node, BitOutputStream out) throws IOException {
         if (node.isLeaf()) {
+            // if the node is leaf write bit 1 and write the byte
             out.writeBit(1);
             out.writeByte(node.getSymbol());
         } else {
+            // if its not a leaf get recurse to the children and write 0
             out.writeBit(0);
             encodeHCTree(node.getC0(), out);
             encodeHCTree(node.getC1(), out);
@@ -291,23 +298,30 @@ public class HCTree {
     }
 
     /**
-     * TODO
+     * start from the leaves and work up
      *
-     * @param in
-     * @return
-     * @throws IOException
+     * @param in is the stream of bits
+     * @return the node of each recursion and the root at the end
+     * @throws IOException the exception
      */
     public HCNode decodeHCTree(BitInputStream in) throws IOException {
         if (in.readBit() == 1) {
+            // if its a leaf create a leaf node with the next 8 bits
             HCNode temp = new HCNode(in.readByte(), 1);
             int ascii = temp.getSymbol() & 0xff; //finds the ascii of symbol
             this.leaves[ascii] = temp;
+            setRoot(temp);
             return temp;
 
         } else {
-            HCNode parent = new HCNode((byte) "parent", 1);
-            parent.setC0(decodeHCTree(in));
-            parent.setC1(decodeHCTree(in));
+            HCNode parent = new HCNode((byte) 0, 1);
+            HCNode child0 = decodeHCTree(in); // initializes child 0
+            HCNode child1 = decodeHCTree(in); // initializes child 1
+            child0.setParent(parent); // sets parent of child 0
+            child1.setParent(parent); // sets parent of child 1
+            parent.setC0(child0); // sets child 0 of parent
+            parent.setC1(child1); // sets child 1 of parent
+            setRoot(parent);
             return parent;
         }
     }

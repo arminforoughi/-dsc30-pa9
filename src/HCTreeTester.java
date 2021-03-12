@@ -87,5 +87,71 @@ public class HCTreeTester {
     }
 
 
+    @Test
+    public void example() throws IOException {
+        HCTreeTester tester = new HCTreeTester();
+        String ex = "dsc10dsc20dsc30dsc40adsc40bdsc80\n";
+        String ex1 = "aaaaaaaaaaaaaaaaabbbbbbbbcccccccddddddddddddddeeeeeeeeef\n";
+        String ex2 = "7634675643245678765";
+        int[] fre = new int[256];
+        int[] fre1 = new int[256];
+        int[] fre2 = new int[256];
+        int[] fre3 = new int[256];
+        for (int i = 0; i < ex.length(); i++) {
+            int ascii = ex.charAt(i) & 0xff;
+            fre[ascii]++;
+        }
+        for (int i = 0; i < ex1.length(); i++) {
+            int ascii = ex1.charAt(i) & 0xff;
+            fre1[ascii]++;
+        }
+        for (int i = 0; i < ex2.length(); i++) {
+            int temp = Character.getNumericValue(ex2.charAt(i));
+            //System.out.println(temp);
+
+            int ascii = (byte) temp & 0xff;
+            //System.out.println(ascii);
+            fre2[ascii]++;
+        }
+        int ascii = 1 & 0xff;
+        fre3[ascii]++;
+        HCTree tree = new HCTree();
+        HCTree tree1 = new HCTree();
+        HCTree tree2 = new HCTree();
+        HCTree tree3 = new HCTree();
+
+        tree.buildTree(fre);
+        tree1.buildTree(fre1);
+        tree2.buildTree(fre2);
+        tree3.buildTree(fre3);
+
+        try {
+            System.out.println(tester.testTree(tree));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        try {
+            System.out.println(tester.testTree(tree1));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        try {
+            System.out.println(tester.testTree(tree2));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        System.out.println(tester.testByte(tree2, (byte) 7));
+        System.out.println(tester.testByte(tree, (byte) '0'));
+        System.out.println(tester.testByte(tree, (byte) 'd'));
+        System.out.println(tester.testByte(tree1, (byte) 'a'));
+        //System.out.println(tester.testByte(tree3, (byte) 1));
+
+
+
+
+
+
+    }
 
 }
