@@ -145,13 +145,7 @@ public class HCTreeTester {
         System.out.println(tester.testByte(tree, (byte) '0'));
         System.out.println(tester.testByte(tree, (byte) 'd'));
         System.out.println(tester.testByte(tree1, (byte) 'a'));
-        //System.out.println(tester.testByte(tree3, (byte) 1));
-
-
-
-
-
-
+        System.out.println(tester.testByte(tree3, (byte) 1));
     }
 
 }
